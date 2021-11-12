@@ -2,21 +2,14 @@ package fr.william.client.model;
 
 import java.util.Objects;
 
-import javax.persistence.Column;
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.PrimaryKeyJoinColumn;
-import javax.persistence.SecondaryTable;
-import javax.persistence.Table;
-
-
-import lombok.Data;
+import javax.persistence.OneToOne;
 
 @Entity
-@Table(name="CLIENT")
-@SecondaryTable(name="ADRESSE", pkJoinColumns={@PrimaryKeyJoinColumn(name="ID_CLIENT")})
 public class Client {
 	
 	@Id
@@ -26,16 +19,15 @@ public class Client {
     private String nom;
     private String prenom;
     
-    @Column(length = 32, name = "VOIE", table = "ADRESSE")
-    private String voie;
-    @Column(length = 32, name = "COMPLT", table = "ADRESSE")
-    private String complement;
-    @Column(length = 5, name = "CODE_POSTAL", table = "ADRESSE")
-    private String codePostal;
-    @Column(length = 45, name = "VILLE", table = "ADRESSE")
-    private String ville;
-    @Column(length = 50, name = "PAYS", table = "ADRESSE")
-    private String pays;
+    @OneToOne(cascade = CascadeType.ALL)
+    private Adresse adresse;
+    
+	public Adresse getAdresse() {
+		return adresse;
+	}
+	public void setAdresse(Adresse adresse) {
+		this.adresse = adresse;
+	}
 	public int getId() {
 		return id;
 	}
@@ -54,39 +46,9 @@ public class Client {
 	public void setPrenom(String prenom) {
 		this.prenom = prenom;
 	}
-	public String getVoie() {
-		return voie;
-	}
-	public void setVoie(String voie) {
-		this.voie = voie;
-	}
-	public String getComplement() {
-		return complement;
-	}
-	public void setComplement(String complement) {
-		this.complement = complement;
-	}
-	public String getCodePostal() {
-		return codePostal;
-	}
-	public void setCodePostal(String codePostal) {
-		this.codePostal = codePostal;
-	}
-	public String getVille() {
-		return ville;
-	}
-	public void setVille(String ville) {
-		this.ville = ville;
-	}
-	public String getPays() {
-		return pays;
-	}
-	public void setPays(String pays) {
-		this.pays = pays;
-	}
 	@Override
 	public int hashCode() {
-		return Objects.hash(codePostal, complement, id, nom, pays, prenom, ville, voie);
+		return Objects.hash(id, nom, prenom);
 	}
 	@Override
 	public boolean equals(Object obj) {
@@ -97,27 +59,25 @@ public class Client {
 		if (getClass() != obj.getClass())
 			return false;
 		Client other = (Client) obj;
-		return Objects.equals(codePostal, other.codePostal) && Objects.equals(complement, other.complement)
-				&& id == other.id && Objects.equals(nom, other.nom) && Objects.equals(pays, other.pays)
-				&& Objects.equals(prenom, other.prenom) && Objects.equals(ville, other.ville)
-				&& Objects.equals(voie, other.voie);
+		return id == other.id && Objects.equals(nom, other.nom) && Objects.equals(prenom, other.prenom);
 	}
 	@Override
 	public String toString() {
-		return "Client [id=" + id + ", nom=" + nom + ", prenom=" + prenom + ", voie=" + voie + ", complement="
-				+ complement + ", codePostal=" + codePostal + ", ville=" + ville + ", pays=" + pays + "]";
+		return "Client [id=" + id + ", nom=" + nom + ", prenom=" + prenom + "]";
 	}
-	public Client(String nom, String prenom, String voie, String complement, String codePostal, String ville,
-			String pays) {
+	public Client(String nom, String prenom, Adresse adresse) {
 		super();
 		this.nom = nom;
 		this.prenom = prenom;
-		this.voie = voie;
-		this.complement = complement;
-		this.codePostal = codePostal;
-		this.ville = ville;
-		this.pays = pays;
+		this.adresse = adresse;
 	}
-    
+	
+	public Client(String nom, String prenom) {
+		super();
+		this.nom = nom;
+		this.prenom = prenom;
+	}
+
+	public Client() {}
     
 }

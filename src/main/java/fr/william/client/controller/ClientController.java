@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import fr.william.client.model.Adresse;
 import fr.william.client.model.Client;
 import fr.william.client.repository.ClientRepository;
 
@@ -19,50 +20,53 @@ import fr.william.client.repository.ClientRepository;
 public class ClientController {
 	@Autowired
 	private ClientRepository clientRepository;
-	
+
 	@GetMapping("/")
 	@ResponseBody
 	public String home()
 	{
 
-		Client martin=new Client("MARTIN","Jean","65, rue de la Republique","","78100","VERSAILLES", "FRANCE");
-		martin=clientRepository.saveAndFlush(martin);
+		Client client1=new Client("MARTIN","Jean");
+		client1=clientRepository.save(client1);
 
-		Client dupont=new Client("DUPONT","sophie","5, rue du Renard","","75015","PARIS","FRANCE");
-		dupont=clientRepository.saveAndFlush(dupont);
+		Adresse adresse1=new Adresse("5, rue du Renard","","75015","PARIS","FRANCE");
+		Client client2=new Client("DUPONT","sophie",adresse1);
+		clientRepository.save(client2);
 
-		Client durand=new Client("DURAND","Pierre","20, boulevard Gambetta","","78300","POISSY","FRANCE");
-		durand=clientRepository.saveAndFlush(durand);
+		Client client3=new Client("DURAND","Pierre",new Adresse("20, boulevard Gambetta","","78300","POISSY","FRANCE"));
+		client3=clientRepository.save(client3);
 
-		Client madec=new Client("MADEC","Denis","29, boulevard Devaux","","78300","POISSY","FRANCE");
-		clientRepository.saveAndFlush(madec);
-
-		System.out.println();
-		System.out.println("Liste de tous les clients:");
-		Collection<Client> liste=clientRepository.findAll();
-		this.affiche(liste);
-
-		System.out.println("MARTIN Jean habite desormais avec DUPONT Sophie:");
-		martin.setVoie(dupont.getVoie());
-		martin.setComplement(dupont.getComplement());
-		martin.setCodePostal(dupont.getCodePostal());
-		martin.setVille(dupont.getVille());
-		martin.setPays(dupont.getPays());
-		clientRepository.saveAndFlush(martin);
-
-		System.out.println("DURAND Pierre est decede :");
-		clientRepository.delete(durand);
+		Client client4=new Client("MADEC","Denis",new Adresse("29, boulevard Devaux","","78300","POISSY","FRANCE"));
+		client4=clientRepository.save(client4);
 
 		System.out.println("Liste de tous les clients:");
 		this.affiche(clientRepository.findAll());
+
+
+		System.out.println("MARTIN Jean habite désormais avec DUPONT Sophie");
+		client1.setAdresse(adresse1);
+		clientRepository.save(client1);
+
+
+		System.out.println("DURAND Pierre change d'adresse");
+		Adresse newAdresse = new Adresse("6 place de l'église","","35740","PACE","FRANCE");
+		client3.setAdresse(newAdresse);
+		clientRepository.save(client3);
 		
+
+		System.out.println("MADEC Denis se désinscrit");
+		clientRepository.delete(client4);
+
+		System.out.println("Liste de tous les clients:");
+		this.affiche(clientRepository.findAll());
+
 		StringBuilder sb = new StringBuilder();
 		sb.append("<h1>Regardez dans votre console et dans votre base de données MySQL <strong>JPA</strong></h1>");
 		sb.append("<a href='http://localhost:8080/clients'>Voir la liste des clients enregistrés</a>");
 		return  sb.toString();
 
 	}
-	
+
 	@GetMapping(value = "/clients")
 	public ResponseEntity<?> getAll(){
 		List<Client> liste = null;
@@ -72,7 +76,7 @@ public class ClientController {
 		} catch (Exception e) {
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
 		}
-		
+
 		return ResponseEntity.status(HttpStatus.OK).body(liste);
 	}
 
