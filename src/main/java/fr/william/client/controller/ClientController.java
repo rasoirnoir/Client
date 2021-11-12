@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import fr.william.client.model.Adresse;
 import fr.william.client.model.Client;
+import fr.william.client.model.Telephone;
+import fr.william.client.repository.AdresseRepository;
 import fr.william.client.repository.ClientRepository;
+import fr.william.client.repository.TelephoneRepository;
 
 @RestController
 @CrossOrigin
@@ -21,43 +24,93 @@ public class ClientController {
 	@Autowired
 	private ClientRepository clientRepository;
 
+	@Autowired
+	private AdresseRepository adresseRepository;
+	
+	@Autowired
+	private TelephoneRepository telephoneRepository;
+
 	@GetMapping("/")
 	@ResponseBody
 	public String home()
 	{
 
-		Client client1=new Client("MARTIN","Jean");
-		client1=clientRepository.save(client1);
-
-		Adresse adresse1=new Adresse("5, rue du Renard","","75015","PARIS","FRANCE");
-		Client client2=new Client("DUPONT","sophie",adresse1);
-		clientRepository.save(client2);
-
-		Client client3=new Client("DURAND","Pierre",new Adresse("20, boulevard Gambetta","","78300","POISSY","FRANCE"));
-		client3=clientRepository.save(client3);
-
-		Client client4=new Client("MADEC","Denis",new Adresse("29, boulevard Devaux","","78300","POISSY","FRANCE"));
-		client4=clientRepository.save(client4);
+		  Adresse adresse1=new Adresse("5, rue du Renard","","75015","PARIS", "FRANCE");
+          Client client1=new Client("MARTIN","Jean");
+          client1=clientRepository.saveAndFlush(client1);
+          
+          Adresse adresse2=new Adresse("5, rue du Renard","","75015","PARIS","FRANCE");
+          Client client2=new Client("DUPONT","sophie",adresse2);
+          adresse2.setClient(client2);
+          client2=clientRepository.saveAndFlush(client2);
+          
+          Adresse adresse3=new Adresse("20, boulevard Gambetta","","78300","POISSY","FRANCE");
+          Client client3=new Client("DURAND","Pierre",adresse3);
+          adresse3.setClient(client3);
+          client3=clientRepository.saveAndFlush(client3);
+          
+          Adresse adresse4=new Adresse("29, boulevard Devaux","","78300","POISSY","FRANCE");
+          Client client4=new Client("MADEC","Denis",adresse4);
+          adresse4.setClient(client4);
+          client4=clientRepository.saveAndFlush(client4);
+       
+          System.out.println("liste de tous les clients:");
+          Collection<Client> liste=clientRepository.findAll();
+          affiche(liste);
+          
+       
+          System.out.println("MARTIN Jean habite desormais avec DUPONT Sophie");
+          client1.setAdresse(adresse1);
+          adresse1.setClient(client1);
+          clientRepository.save(client1);
+   
+//          System.out.println("MADEC Denis se desinscrit");
+//          clientRepository.delete(client4);
+          
+       
+          System.out.println("Liste de toutes les adresses et les clients associés:");
+          Collection<Adresse> listeAdresses = adresseRepository.findAll();
+          for (Adresse adresse : listeAdresses)
+          {
+        	  System.out.print(adresse+"  client : ");
+        	  if (adresse.getClient()!=null) System.out.println(adresse.getClient());
+            	  
+          }
+          
+          Telephone tel1=new Telephone("01 43 65 87 34");
+          telephoneRepository.save(tel1);
+          System.out.println("le numero "+tel1.getNumero()+" est ajoute au client "+client1);
+          
+          ajoutTelephone(client1.getId(),tel1);
+          
+          Telephone tel2=new Telephone("01 65 34 01 23");
+          telephoneRepository.save(tel2);
+          System.out.println("le numero "+tel2.getNumero()+" est ajoute au client "+client2);
+          
+          ajoutTelephone(client2.getId(),tel2);
+          
+          Telephone tel3=new Telephone("02 78 99 41 73");
+          telephoneRepository.save(tel3);
+          System.out.println("le numero "+tel3.getNumero()+" est ajoute au client "+client3);
+          
+          ajoutTelephone(client3.getId(),tel3);
+          
+          Telephone tel4=new Telephone("02 65 98 23 08");
+          telephoneRepository.save(tel4);
+          System.out.println("le numero "+tel4.getNumero()+" est ajoute au client "+client3);
+          
+         ajoutTelephone(client3.getId(),tel4);
+          
+          System.out.println("liste de tous les clients:");
+          liste=clientRepository.findAll();
+          affiche(liste);
+          
+          System.out.println("le numero "+tel2.getNumero()+" est supprime du client "+client2);
+          
+          enleveTelephone(client2.getId(),tel2);
 
 		System.out.println("Liste de tous les clients:");
-		this.affiche(clientRepository.findAll());
-
-
-		System.out.println("MARTIN Jean habite désormais avec DUPONT Sophie");
-		client1.setAdresse(adresse1);
-		clientRepository.save(client1);
-
-
-		System.out.println("DURAND Pierre change d'adresse");
-		Adresse newAdresse = new Adresse("6 place de l'église","","35740","PACE","FRANCE");
-		client3.setAdresse(newAdresse);
-		clientRepository.save(client3);
 		
-
-		System.out.println("MADEC Denis se désinscrit");
-		clientRepository.delete(client4);
-
-		System.out.println("Liste de tous les clients:");
 		this.affiche(clientRepository.findAll());
 
 		StringBuilder sb = new StringBuilder();
@@ -95,4 +148,35 @@ public class ClientController {
 
 
 	}
+	
+	  private boolean ajoutTelephone(int idClient,Telephone numero){
+	    	// on recherche le client
+	        Client cl=clientRepository.getById(idClient);
+	        if(cl!=null)
+	        {
+	        	// on ajoute le numéro de téléphone
+	            cl.getTelephones().add(numero);
+	            clientRepository.saveAndFlush(cl);
+	            return true;
+	        }
+	            return false;
+	    }
+	    
+	    private boolean enleveTelephone(int idClient,Telephone numero){
+	    	Client cl=clientRepository.getById(idClient);
+	        if(cl!=null)
+	        {
+	            for(Telephone num : cl.getTelephones())
+	            {
+	                if(num.equals(numero))
+	                {
+	                    cl.getTelephones().remove(num);
+	                    telephoneRepository.delete(num);
+	                    clientRepository.saveAndFlush(cl);
+	                    return true;
+	                }
+	            }
+	        }
+	        return false;
+	    }
 }

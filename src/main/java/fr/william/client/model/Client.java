@@ -1,13 +1,17 @@
 package fr.william.client.model;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Objects;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 @Entity
@@ -23,7 +27,16 @@ public class Client {
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "ADRESSE_ID")
     private Adresse adresse;
+    @OneToMany(cascade = {CascadeType.ALL}, fetch = FetchType.LAZY)
+    private Collection<Telephone> telephones;
     
+	public Collection<Telephone> getTelephones() {
+		if(telephones == null) return new ArrayList<Telephone>();
+		return telephones;
+	}
+	public void setTelephones(Collection<Telephone> telephones) {
+		this.telephones = telephones;
+	}
 	public Adresse getAdresse() {
 		return adresse;
 	}
